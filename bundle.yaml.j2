@@ -1,0 +1,30 @@
+---
+{%- set testing = testing is defined and testing.casefold() in ["1", "yes", "true"] %}
+bundle: kubernetes
+name: mimir-bundle
+description: >
+  Mimir is a sharded, distributed metrics store which is able to store metrics in object storage:
+  mimir:
+    charm: {{ mimir|default('mimir-k8s', true) }}
+    scale: 1
+    trust: true
+    {%- if mimir is defined and mimir.endswith('.charm') %}
+    resources:
+        mimir-image: "ubuntu/mimir"
+    {%- else %}
+    channel: {{ channel|default('edge', true) }}
+    {%- endif %}
+  s3proxy:
+    charm: {{ s3proxy|default('s3proxy-k8s', true) }}
+    scale: 1
+    trust: true
+    {%- if s3proxy is defined and s3proxy.endswith('.charm') %}
+    resources:
+      s3proxy-image: "ubuntu/s3proxy:latest"
+    {%- else %}
+    channel: {{ channel|default('edge', true) }}
+    {%- endif %}
+
+relations:
+- - mimir:s3
+  - s3proxy

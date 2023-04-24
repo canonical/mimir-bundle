@@ -1,0 +1,14 @@
+applications:
+  mimir:
+    offers:
+      mimir-remote-write:
+        endpoints:
+        - receive-remote-write
+
+relations:
+- - mimir:metrics-endpoint
+  - prometheus
+- - mimir:grafana-source
+  - grafana
+- - mimir:grafana-dashboard
+  - grafana
