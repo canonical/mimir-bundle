@@ -4,6 +4,7 @@ bundle: kubernetes
 name: mimir-bundle
 description: >
   Mimir is a sharded, distributed metrics store which is able to store metrics in object storage:
+applications:
   mimir:
     charm: {{ mimir|default('mimir-k8s', true) }}
     scale: 1
