@@ -15,11 +15,10 @@ applications:
     trust: true
   worker:
     charm: mimir-worker-k8s
-    channel: edge
+    channel: {{ channel|default('edge', true) }}
     scale: 1
     options:
       alertmanager: true
-      compactor: true
       compactor: true
       distributor: true
       ingester: true
@@ -35,7 +34,7 @@ applications:
   s3-integrator:
     charm: s3-integrator
     scale: 1
-    channel: edge
+    channel: {{ channel|default('edge', true) }}
 
 relations:
 - - coordinator:mimir-cluster
