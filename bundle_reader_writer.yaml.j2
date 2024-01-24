@@ -15,7 +15,7 @@ applications:
     trust: true
   reader:
     charm: mimir-worker-k8s
-    channel: edge
+    channel: {{ channel|default('edge', true) }}
     scale: 1
     options:
       alertmanager: true
@@ -31,7 +31,7 @@ applications:
     trust: true
   writer:
     charm: mimir-worker-k8s
-    channel: edge
+    channel: {{ channel|default('edge', true) }}
     scale: 1
     options:
       compactor: true
@@ -44,7 +44,7 @@ applications:
   s3-integrator:
     charm: s3-integrator
     scale: 1
-    channel: edge
+    channel: {{ channel|default('edge', true) }}
 
 relations:
 - - coordinator:mimir-cluster

@@ -1,46 +1,114 @@
 # Mimir bundle
 
-Mimir is a shardable, horizontally scalable push-based metrics server, and alert rule evaluation engine which is a Prometheus/Cortex/Thanos-compatible by Grafana Labs.
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [Mimir bundle](#mimir-bundle)
+    - [Usage](#usage)
+        - [Recommended or minimal deployment](#recommended-or-minimal-deployment)
+        - [Reader-Writer path deployment:](#reader-writer-path-deployment)
+    - [Overlays](#overlays)
+
+<!-- markdown-toc end -->
+
+
+
+Mimir is an open source, horizontally scalable, highly available, multi-tenant TSDB for long-term storage for Prometheus.
 
 This Juju bundle deploys Mimir and a small object storage server, consisting of the following interrelated charms:
 
-- [Mimir](https://charmhub.io/mimir-k8s) ([source](https://github.com/canonical/mimir-k8s-operator))
-- [s3proxy](https://charmhub.io/s3proxy-k8s) ([source](https://github.com/canonical/s3proxy-k8s-operator))
+- [Mimir Coordinator](https://charmhub.io/mimir-coordinator-k8s) ([source](https://github.com/canonical/mimir-coordinator-k8s-operator))
+- [Mimir Worker](https://charmhub.io/mimir-worker-k8s) ([source](https://github.com/canonical/mimir-worker-k8s-operator))
+- [s3integrator](https://charmhub.io/s3-integrator) ([source](https://github.com/canonical/s3-integrator))
 
 This bundle is under development.
-Join us on [Discourse](https://discourse.charmhub.io/t/canonical-observability-stack/5132) and [MatterMost](https://chat.charmhub.io/charmhub/channels/observability)!
+Join us on:
+
+- [Discourse](https://charmhub.io/topics/canonical-observability-stack)
+- [Matrix chat](https://matrix.to/#/#cos:ubuntu.com)
 
 ## Usage
 
-Before deploying the bundle you may want to create a dedicated model for COS components, of which Mimir is one, if one does not already exist:
+Before deploying the bundle you may want to create a dedicated model for Mimir components:
 
 ```shell
-juju add-model cos
-juju switch cos
+juju add-model mimir
+juju switch mimir
 ```
 
-You can deploy the bundle from charmhub with:
+### Recommended or minimal deployment
+
+Deploy the bundle from a local file by running:
 
 ```shell
-juju deploy mimir-bundle --channel=edge --trust
-```
-
-or, to deploy the bundle from a local file:
-
-```shell
-# generate and activate a virtual environment with dependencies
-tox -e integration --notest
-source .tox/integration/bin/activate
-
-# render bundle with default values
-./render_bundle.py bundle.yaml
+tox -e render-bundle -- bundle.yaml --template=bundle.yaml.j2 --channel=edge --recommended_deployment=True
 juju deploy ./bundle.yaml --trust
 ```
+
+Note that the `--recommended_deployment=True` parameter will generate a bundle with:
+
+- 3 `ingester` units
+- 2 `querier` units
+- 2 `query-scheduler` units
+- 1 `alertmanager` unit
+- 1 `compactor` unit
+- 1 `distributor` unit
+- 1 `query-frontend` unit
+- 1 `ruler` unit
+- 1 `store-gateway` unit
+
+and
+
+- 1 `s3-integrator` unit
+- 1 `coordinator` unit
+
+if `--recommended_deployment` parameter is not used, will generate a bundle with:
+
+- 1 `ingester` units
+- 1 `querie`r units
+- 1 `query-scheduler` units
+- 1 `alertmanager` unit
+- 1 `compactor` unit
+- 1 `distributor` unit
+- 1 `query-frontend` unit
+- 1 `ruler` unit
+- 1 `store-gateway` unit
+
+and
+
+- 1 `s3-integrator` unit
+- 1 `coordinator` unit
+
+
+### Reader-Writer path deployment:
+
+Deploy the [read and write paths](https://grafana.com/docs/mimir/latest/get-started/about-grafana-mimir-architecture/#grafana-mimir-components) from a local file by running:
+
+```shell
+tox -e render-bundle -- bundle.yaml --template=bundle_reader_writer.yaml.j2 --channel=edge
+juju deploy ./bundle.yaml --trust
+```
+
+This bundle will deploy:
+
+- 1 `writer` unit
+- 1 `reader` unit
+
+and
+
+- 1 `s3-integrator` unit
+- 1 `coordinator` unit
+
 
 Currently the bundle is available only on the `edge` channel, using `edge` charms.
 When the charms graduate to `beta`, `candidate` and `stable`, we will issue the bundle in the same channels.
 
 The `--trust` option is needed by the charms in the `mimir-lite` bundle to be able to patch their K8s services to use the right ports (see this [Juju limitation](https://bugs.launchpad.net/juju/+bug/1936260)).
+
+
+## Overlays
+
+TODO: Fix this outdated section
 
 We also make available some [**overlays**](https://juju.is/docs/sdk/bundle-reference) as convenience.
 A Juju overlay is a set of model-specific modifications, which reduce the amount of commands needed to set up a bundle like COS Lite.

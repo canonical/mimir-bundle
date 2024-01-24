@@ -1,31 +1,143 @@
 ---
-{%- set testing = testing is defined and testing.casefold() in ["1", "yes", "true"] %}
 bundle: kubernetes
 name: mimir-bundle
 description: >
   Mimir is a sharded, distributed metrics store which is able to store metrics in object storage:
 applications:
-  mimir:
-    charm: {{ mimir|default('mimir-k8s', true) }}
-    scale: 1
-    trust: true
-    {%- if mimir is defined and mimir.endswith('.charm') %}
-    resources:
-        mimir-image: "ubuntu/mimir"
-    {%- else %}
+  alertmanager:
+    charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
-    {%- endif %}
-  s3proxy:
-    charm: {{ s3proxy|default('s3proxy-k8s', true) }}
     scale: 1
+    options:
+      alertmanager: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
     trust: true
-    {%- if s3proxy is defined and s3proxy.endswith('.charm') %}
-    resources:
-      s3proxy-image: "ubuntu/s3proxy:latest"
-    {%- else %}
+  compactor:
+    charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
+    scale: 1
+    options:
+      compactor: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  coordinator:
+    charm: mimir-coordinator-k8s
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  distributor:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    options:
+      distributor: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  ingester:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    {%- if recommended_deployment == "True" %}
+    scale: 3
+    {%- else %}
+    scale: 1
     {%- endif %}
-
+    options:
+      ingester: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  querier:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    {%- if recommended_deployment == "True" %}
+    scale: 2
+    {%- else %}
+    scale: 1
+    {%- endif %}
+    options:
+      querier: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  query-frontend:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    options:
+      query-frontend: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  query-scheduler:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    {%- if recommended_deployment == "True" %}
+    scale: 2
+    {%- else %}
+    scale: 1
+    {%- endif %}
+    options:
+      query-scheduler: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  ruler:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    options:
+      ruler: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  s3-integrator:
+    charm: s3-integrator
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    constraints: arch=amd64
+    trust: true
+  store-gateway:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    options:
+      store-gateway: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
 relations:
-- - mimir:s3
-  - s3proxy
+- - coordinator:s3
+  - s3-integrator:s3-credentials
+- - coordinator:mimir-cluster
+  - alertmanager:mimir-cluster
+- - coordinator:mimir-cluster
+  - compactor:mimir-cluster
+- - coordinator:mimir-cluster
+  - distributor:mimir-cluster
+- - coordinator:mimir-cluster
+  - ingester:mimir-cluster
+- - coordinator:mimir-cluster
+  - querier:mimir-cluster
+- - coordinator:mimir-cluster
+  - query-frontend:mimir-cluster
+- - coordinator:mimir-cluster
+  - query-scheduler:mimir-cluster
+- - coordinator:mimir-cluster
+  - ruler:mimir-cluster
+- - coordinator:mimir-cluster
+  - store-gateway:mimir-cluster
