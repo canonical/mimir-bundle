@@ -20,7 +20,6 @@ applications:
     options:
       alertmanager: true
       compactor: true
-      compactor: true
       distributor: true
       ingester: true
       querier: true
