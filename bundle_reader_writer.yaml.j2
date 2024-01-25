@@ -13,18 +13,31 @@ applications:
     storage:
       data: kubernetes,1,1024M
     trust: true
-  reader:
+
+  backend:
     charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
     scale: 1
     options:
       alertmanager: true
       compactor: true
+      store-gateway: true
+      ruler: true
+      query-scheduler: true
+      # uncomment once this issue is solved:
+      # https://github.com/canonical/mimir-coordinator-k8s-operator/issues/33
+      # overrides-exporter: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  reader:
+    charm: mimir-worker-k8s
+    channel: {{ channel|default('edge', true) }}
+    scale: 1
+    options:
       querier: true
       query-frontend: true
-      query-scheduler: true
-      ruler: true
-      store-gateway: true
     constraints: arch=amd64
     storage:
       data: kubernetes,1,1024M
@@ -34,7 +47,6 @@ applications:
     channel: {{ channel|default('edge', true) }}
     scale: 1
     options:
-      compactor: true
       distributor: true
       ingester: true
     constraints: arch=amd64

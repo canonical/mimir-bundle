@@ -7,15 +7,27 @@
     - [Usage](#usage)
         - [Recommended or minimal deployment](#recommended-or-minimal-deployment)
         - [Reader-Writer path deployment:](#reader-writer-path-deployment)
+        - [Monolithic deployment](#monolithic-deployment)
     - [Overlays](#overlays)
 
 <!-- markdown-toc end -->
 
 
 
-Mimir is an open source, horizontally scalable, highly available, multi-tenant TSDB for long-term storage for Prometheus.
+[Mimir](https://grafana.com/oss/mimir/) is an Open Source, horizontally scalable, highly available, multi-tenant TSDB for long-term storage for Prometheus.
 
-This Juju bundle deploys Mimir and a small object storage server, consisting of the following interrelated charms:
+Mimir is a single binary that can be configured to run in several modes to take up different roles in the ingestion/storage/read pipeline, such as `distributor`, `compactor` and so on, [read the official docs for a more detailed explanation.](https://grafana.com/docs/mimir/latest/get-started/about-grafana-mimir-architecture/#grafana-mimir-components).
+
+Charmed Mimir consists of two charms, a [coordinator](https://github.com/canonical/mimir-coordinator-k8s-operator) and a [worker](https://github.com/canonical/mimir-worker-k8s-operator).
+
+The coordinator is responsible for creating the configuration files for each worker and deciding whether the cluster is in a coherent state, based on the roles that each worker has adopted.
+
+Several worker applications can be deployed and related to the coordinator, taking on different roles and enabling independent scalability of the various components of the stack.
+
+The coordinator charm acts as single access point for bundle-level integrations such as TLS, ingress, self-monitoring, etc..., and as single source of truth for bundle-level configurations that otherwise would have to be repeated (and kept in sync) between the individual worker nodes.
+
+
+This Juju bundle deploys Mimir and a small object storage server, consisting of the following interrelated charmed operators:
 
 - [Mimir Coordinator](https://charmhub.io/mimir-coordinator-k8s) ([source](https://github.com/canonical/mimir-coordinator-k8s-operator))
 - [Mimir Worker](https://charmhub.io/mimir-worker-k8s) ([source](https://github.com/canonical/mimir-worker-k8s-operator))
@@ -33,7 +45,6 @@ Before deploying the bundle you may want to create a dedicated model for Mimir c
 
 ```shell
 juju add-model mimir
-juju switch mimir
 ```
 
 ### Recommended or minimal deployment
@@ -80,9 +91,9 @@ and
 - 1 `coordinator` unit
 
 
-### Reader-Writer path deployment:
+### Reader-Writer mode deployment:
 
-Deploy the [read and write paths](https://grafana.com/docs/mimir/latest/get-started/about-grafana-mimir-architecture/#grafana-mimir-components) from a local file by running:
+Deploy the [read and write mode](https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#read-write-mode) from a local file by running:
 
 ```shell
 tox -e render-bundle -- bundle.yaml --template=bundle_reader_writer.yaml.j2 --channel=edge
@@ -103,7 +114,28 @@ and
 Currently the bundle is available only on the `edge` channel, using `edge` charms.
 When the charms graduate to `beta`, `candidate` and `stable`, we will issue the bundle in the same channels.
 
-The `--trust` option is needed by the charms in the `mimir-lite` bundle to be able to patch their K8s services to use the right ports (see this [Juju limitation](https://bugs.launchpad.net/juju/+bug/1936260)).
+The `--trust` option is needed by the charms in the `mimir` bundle to be able to patch their K8s services to use the right ports (see this [Juju limitation](https://bugs.launchpad.net/juju/+bug/1936260)).
+
+
+### Monolithic deployment
+
+The [monolithic mode](https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#monolithic-mode) runs all required components in a single process and is the default mode of operation. Monolithic mode is the simplest way to deploy Grafana Mimir and is useful if you want to get started quickly or want to work with Grafana Mimir in a development environment.
+
+As this deployment is intended for development and testing purposes, s3-integrator is not necessary.
+
+
+```shell
+tox -e render-bundle -- bundle.yaml
+juju deploy ./bundle.yaml --trust
+```
+
+This bundle will deploy:
+
+- 1 `workert` unit
+
+and
+
+- 1 `coordinator` unit
 
 
 ## Overlays

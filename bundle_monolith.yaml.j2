@@ -31,13 +31,7 @@ applications:
     storage:
       data: kubernetes,1,1024M
     trust: true
-  s3-integrator:
-    charm: s3-integrator
-    scale: 1
-    channel: {{ channel|default('edge', true) }}
 
 relations:
 - - coordinator:mimir-cluster
   - worker:mimir-cluster
-- - coordinator:s3
-  - s3-integrator:s3-credentials
