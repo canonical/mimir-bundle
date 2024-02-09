@@ -1,0 +1,115 @@
+---
+applications:
+  alertmanager:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 1
+    options:
+      alertmanager: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  compactor:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 1
+    options:
+      compactor: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  distributor:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 1
+    options:
+      distributor: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  ingester:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 3
+    options:
+      ingester: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  querier:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 2
+    options:
+      querier: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  query-frontend:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 1
+    options:
+      query-frontend: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  query-scheduler:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 2
+    options:
+      query-scheduler: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  ruler:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 1
+    options:
+      ruler: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+  s3-integrator:
+    charm: s3-integrator
+    channel: edge
+    scale: 1
+    constraints: arch=amd64
+    trust: true
+  store-gateway:
+    charm: mimir-worker-k8s
+    channel: edge
+    scale: 1
+    options:
+      store-gateway: true
+    constraints: arch=amd64
+    storage:
+      data: kubernetes,1,1024M
+    trust: true
+relations:
+- - mimir:mimir-cluster
+  - alertmanager:mimir-cluster
+- - mimir:mimir-cluster
+  - compactor:mimir-cluster
+- - mimir:mimir-cluster
+  - distributor:mimir-cluster
+- - mimir:mimir-cluster
+  - querier:mimir-cluster
+- - mimir:mimir-cluster
+  - query-frontend:mimir-cluster
+- - mimir:mimir-cluster
+  - query-scheduler:mimir-cluster
+- - mimir:mimir-cluster
+  - ruler:mimir-cluster
+- - mimir:mimir-cluster
+  - store-gateway:mimir-cluster

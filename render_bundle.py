@@ -14,7 +14,7 @@ from jinja2 import Environment, Template, meta
 
 # https://stackoverflow.com/a/6209894/3516684
 this_script_dir = os.path.dirname(inspect.getframeinfo(inspect.currentframe()).filename)  # type: ignore[arg-type]
-BUNDLE_TEMPLATE_PATH = os.path.join(this_script_dir, "bundle_monolith.yaml.j2")
+BUNDLE_TEMPLATE_PATH = os.path.join(this_script_dir, "bundle.yaml.j2")
 
 
 def read_bundle_template(

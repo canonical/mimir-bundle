@@ -3,17 +3,21 @@ bundle: kubernetes
 name: mimir-bundle
 description: >
   Mimir is a sharded, distributed metrics store which is able to store metrics in object storage:
-bundle: kubernetes
+
+website: https://github.com/canonical/mimir-bundle
+issues: https://github.com/canonical/mimir-bundle/issues
+
 applications:
-  coordinator:
+  mimir:
     charm: mimir-coordinator-k8s
+    channel: edge
     scale: 1
     trust: true
     constraints: arch=amd64
     storage:
       data: kubernetes,1,1024M
-    trust: true
-  worker:
+  # much more than an ingester in fact
+  ingester:
     charm: mimir-worker-k8s
     channel: edge
     scale: 1
@@ -37,7 +41,7 @@ applications:
     channel: edge
 
 relations:
-- - coordinator:mimir-cluster
-  - worker:mimir-cluster
-- - coordinator:s3
+- - mimir:mimir-cluster
+  - ingester:mimir-cluster
+- - mimir:s3
   - s3-integrator:s3-credentials
