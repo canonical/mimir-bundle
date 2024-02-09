@@ -5,8 +5,8 @@
 
 - [Mimir bundle](#mimir-bundle)
     - [Usage](#usage)
-        - [Recommended or minimal deployment](#recommended-or-minimal-deployment)
-        - [Reader-Writer path deployment:](#reader-writer-path-deployment)
+        - [Recommended distributed deployment](#recommended-distributed-deployment)
+        - [Reader-Writer path deployment:](#reader-writer-mode-deployment)
         - [Monolithic deployment](#monolithic-deployment)
     - [Overlays](#overlays)
 
@@ -47,16 +47,16 @@ Before deploying the bundle you may want to create a dedicated model for Mimir c
 juju add-model mimir
 ```
 
-### Recommended or minimal deployment
+### Recommended, distributed deployment
 
 Deploy the bundle from a local file by running:
 
 ```shell
-tox -e render-bundle -- bundle.yaml --template=bundle.yaml.j2 --channel=edge --recommended_deployment=True
+tox -e render-bundle -- bundle.yaml --template=bundle.yaml.j2 --channel=edge --distributed=True
 juju deploy ./bundle.yaml --trust
 ```
 
-Note that the `--recommended_deployment=True` parameter will generate a bundle with:
+Note that the `--distributed=True` parameter will generate a bundle with:
 
 - 3 `ingester` units
 - 2 `querier` units
@@ -73,7 +73,7 @@ and
 - 1 `s3-integrator` unit
 - 1 `coordinator` unit
 
-if `--recommended_deployment` parameter is not used, will generate a bundle with:
+if `--distributed` parameter is not used, will generate a bundle with:
 
 - 1 `ingester` units
 - 1 `querie`r units
@@ -131,7 +131,7 @@ juju deploy ./bundle.yaml --trust
 
 This bundle will deploy:
 
-- 1 `workert` unit
+- 1 `worker` unit
 
 and
 
@@ -140,13 +140,11 @@ and
 
 ## Overlays
 
-TODO: Fix this outdated section
-
 We also make available some [**overlays**](https://juju.is/docs/sdk/bundle-reference) as convenience.
 A Juju overlay is a set of model-specific modifications, which reduce the amount of commands needed to set up a bundle like COS Lite.
 Specifically, we offer the following overlays:
 
-* the [`cos-relations` overlay](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/cos-relations-overlay.yaml) establishes relationshps between the charms in this bundle and those in the [`cos-lite` bundle](https://github.com/canonical/cos-lite-bundle), as well as exposing Mimir as a Prometheus compatible remote-write targets as an Juju offer which may be consumed as part of a cross-model relatoin.
+* the [`cos-relations` overlay](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/cos-relations-overlay.yaml) establishes relationships between the charms in this bundle and those in the [`cos-lite` bundle](https://github.com/canonical/cos-lite-bundle), as well as exposing Mimir as a Prometheus compatible remote-write targets as an Juju offer which may be consumed as part of a cross-model relation.
 * the [`storage-small` overlays](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/storage-small-overlay.yaml) provides a setup of the various storages for the Mimir bundle charms for a small setup.
   Using an overlay for storage is fundamental for a productive setup, as you cannot change the amount of storage assigned to the various charms after the deployment of the Mimir Bundle.
 

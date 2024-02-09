@@ -45,7 +45,7 @@ applications:
   ingester:
     charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
-    {%- if recommended_deployment == "True" %}
+    {%- if distributed == "True" %}
     scale: 3
     {%- else %}
     scale: 1
@@ -59,7 +59,7 @@ applications:
   querier:
     charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
-    {%- if recommended_deployment == "True" %}
+    {%- if distributed == "True" %}
     scale: 2
     {%- else %}
     scale: 1
@@ -83,7 +83,7 @@ applications:
   query-scheduler:
     charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
-    {%- if recommended_deployment == "True" %}
+    {%- if distributed == "True" %}
     scale: 2
     {%- else %}
     scale: 1
