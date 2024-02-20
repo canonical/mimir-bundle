@@ -10,8 +10,8 @@ applications:
       # of alert rules and loading alert rules in from disk, as well as
       # temporary storage before flushing to the object store.
       mimir-store: 1G
-  s3proxy:
+  s3-integrator:
     storage:
-      # The s3proxy operator uses the `s3proxy-store` storage to map
+      # The s3-integrator operator uses the `s3proxy-store` storage to map
       # blob storage onto a backing filesystem.
       s3proxy-store: 5G

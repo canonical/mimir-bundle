@@ -47,96 +47,40 @@ Before deploying the bundle you may want to create a dedicated model for Mimir c
 juju add-model mimir
 ```
 
-### Recommended, distributed deployment
-
-Deploy the bundle from a local file by running:
-
-```shell
-tox -e render-bundle -- bundle.yaml --template=bundle.yaml.j2 --channel=edge --distributed=True
-juju deploy ./bundle.yaml --trust
-```
-
-Note that the `--distributed=True` parameter will generate a bundle with:
-
-- 3 `ingester` units
-- 2 `querier` units
-- 2 `query-scheduler` units
-- 1 `alertmanager` unit
-- 1 `compactor` unit
-- 1 `distributor` unit
-- 1 `query-frontend` unit
-- 1 `ruler` unit
-- 1 `store-gateway` unit
-
-and
-
-- 1 `s3-integrator` unit
-- 1 `coordinator` unit
-
-if `--distributed` parameter is not used, will generate a bundle with:
-
-- 1 `ingester` units
-- 1 `querie`r units
-- 1 `query-scheduler` units
-- 1 `alertmanager` unit
-- 1 `compactor` unit
-- 1 `distributor` unit
-- 1 `query-frontend` unit
-- 1 `ruler` unit
-- 1 `store-gateway` unit
-
-and
-
-- 1 `s3-integrator` unit
-- 1 `coordinator` unit
-
-
-### Reader-Writer mode deployment:
-
-Deploy the [read and write mode](https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#read-write-mode) from a local file by running:
-
-```shell
-tox -e render-bundle -- bundle.yaml --template=bundle_reader_writer.yaml.j2 --channel=edge
-juju deploy ./bundle.yaml --trust
-```
-
-This bundle will deploy:
-
-- 1 `writer` unit
-- 1 `reader` unit
-
-and
-
-- 1 `s3-integrator` unit
-- 1 `coordinator` unit
-
-
-Currently the bundle is available only on the `edge` channel, using `edge` charms.
-When the charms graduate to `beta`, `candidate` and `stable`, we will issue the bundle in the same channels.
-
-The `--trust` option is needed by the charms in the `mimir` bundle to be able to patch their K8s services to use the right ports (see this [Juju limitation](https://bugs.launchpad.net/juju/+bug/1936260)).
-
-
-### Monolithic deployment
-
-The [monolithic mode](https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#monolithic-mode) runs all required components in a single process and is the default mode of operation. Monolithic mode is the simplest way to deploy Grafana Mimir and is useful if you want to get started quickly or want to work with Grafana Mimir in a development environment.
-
-As this deployment is intended for development and testing purposes, s3-integrator is not necessary.
-
+The bundle deploys Mimir in its [monolithic mode](https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#monolithic-mode), which runs all required components in a single process and is the default mode of operation. Monolithic mode is the simplest way to deploy Grafana Mimir and is useful if you want to get started quickly or want to work with Grafana Mimir in a development environment.
 
 ```shell
 tox -e render-bundle -- bundle.yaml
 juju deploy ./bundle.yaml --trust
 ```
 
-This bundle will deploy:
+The bundle will deploy:
 
-- 1 `worker` unit
-
-and
-
+- 3 `worker` units
 - 1 `coordinator` unit
+- 1 `s3-integrator` unit
 
+[note]
+The default number of units is an odd number to prevent split-brain situations, and greater than 1 for the deployment to be HA.
+[/note]
+
+### Advanced deployment modes
+
+Mimir can also be deployed distributing the roles across units freely. This includes for example the experimental [read/write deployment mode](https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/#read-write-mode).
+You can achieve this (or any other allocation of roles) by deploying the components manually: 
+
+```
+juju deploy mimir-coordinator-k8s mimir
+juju deploy mimir-worker-k8s read --config query-frontend=true --config querier=true
+juju deploy mimir-worker-k8s write --config distributor=true --config ingester=true
+juju deploy mimir-worker-k8s backend --config store-gateway=true --config compactor=true --config ruler=true --config alertmanager=true --config query-scheduler=true --config overrides-exporter=true
+juju deploy s3-integrator
+
+juju relate mimir read
+juju relate mimir write
+juju relate mimir backend
+juju relate mimir s3-integrator
+```
 
 ## Overlays
 
@@ -161,6 +105,7 @@ juju deploy cos-lite-bundle --channel=edge --trust
 
 juju deploy mimir-bundle --channel=edge --trust --overlay ./cos-relations-overlay.yaml
 ```
+
 ```shell
 ./render_bundle.py bundle.yaml --channel=edge
 charmcraft pack

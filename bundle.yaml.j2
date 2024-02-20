@@ -17,10 +17,10 @@ applications:
     storage:
       data: kubernetes,1,1024M
   # much more than an ingester in fact
-  ingester:
+  worker:
     charm: mimir-worker-k8s
     channel: {{ channel|default('edge', true) }}
-    scale: 1
+    scale: 3
     options:
       alertmanager: true
       compactor: true
