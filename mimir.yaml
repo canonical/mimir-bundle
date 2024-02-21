@@ -16,11 +16,10 @@ applications:
     constraints: arch=amd64
     storage:
       data: kubernetes,1,1024M
-  # much more than an ingester in fact
-  ingester:
+  mimir-worker:
     charm: mimir-worker-k8s
     channel: edge
-    scale: 1
+    scale: 3
     options:
       alertmanager: true
       compactor: true
@@ -42,6 +41,6 @@ applications:
 
 relations:
 - - mimir:mimir-cluster
-  - ingester:mimir-cluster
+  - mimir-worker:mimir-cluster
 - - mimir:s3
   - s3-integrator:s3-credentials
