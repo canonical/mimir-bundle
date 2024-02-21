@@ -56,12 +56,12 @@ juju deploy ./bundle.yaml --trust
 
 The bundle will deploy:
 
-- 3 `worker` units
-- 1 `coordinator` unit
-- 1 `s3-integrator` unit
+- 3 `mimir-worker` units (`mimir-worker-k8s` charm)
+- 1 `coordinator` unit (`mimir-coordinator-k8s` charm)
+- 1 `s3-integrator` unit (`s3-integrator` charm)
 
 [note]
-The default number of units is an odd number to prevent split-brain situations, and greater than 1 for the deployment to be HA.
+The default number of worker units is an odd number to prevent split-brain situations, and greater than 1 for the deployment to be HA.
 [/note]
 
 ### Advanced deployment modes
@@ -71,26 +71,24 @@ You can achieve this (or any other allocation of roles) by deploying the compone
 
 ```
 juju deploy mimir-coordinator-k8s mimir
-juju deploy mimir-worker-k8s read --config query-frontend=true --config querier=true
-juju deploy mimir-worker-k8s write --config distributor=true --config ingester=true
-juju deploy mimir-worker-k8s backend --config store-gateway=true --config compactor=true --config ruler=true --config alertmanager=true --config query-scheduler=true --config overrides-exporter=true
+juju deploy mimir-worker-k8s mimir-read --config query-frontend=true --config querier=true
+juju deploy mimir-worker-k8s mimir-write --config distributor=true --config ingester=true
+juju deploy mimir-worker-k8s mimir-backend --config store-gateway=true --config compactor=true --config ruler=true --config alertmanager=true --config query-scheduler=true --config overrides-exporter=true
 juju deploy s3-integrator
 
-juju relate mimir read
-juju relate mimir write
-juju relate mimir backend
+juju relate mimir mimir-read
+juju relate mimir mimir-write
+juju relate mimir mimir-backend
 juju relate mimir s3-integrator
 ```
 
 ## Overlays
 
-We also make available some [**overlays**](https://juju.is/docs/sdk/bundle-reference) as convenience.
-A Juju overlay is a set of model-specific modifications, which reduce the amount of commands needed to set up a bundle like COS Lite.
-Specifically, we offer the following overlays:
+We also make available some [**overlays**](https://juju.is/docs/sdk/bundle-reference) for convenience:
 
-* the [`cos-relations` overlay](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/cos-relations-overlay.yaml) establishes relationships between the charms in this bundle and those in the [`cos-lite` bundle](https://github.com/canonical/cos-lite-bundle), as well as exposing Mimir as a Prometheus compatible remote-write targets as an Juju offer which may be consumed as part of a cross-model relation.
-* the [`storage-small` overlays](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/storage-small-overlay.yaml) provides a setup of the various storages for the Mimir bundle charms for a small setup.
-  Using an overlay for storage is fundamental for a productive setup, as you cannot change the amount of storage assigned to the various charms after the deployment of the Mimir Bundle.
+* the [`cos-relations` overlay](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/cos-relations-overlay.yaml) establishes relationships between the charms in this bundle and those in the [`cos-lite` bundle](https://github.com/canonical/cos-lite-bundle), as well as exposing Mimir as a Prometheus compatible remote-write targets as a Juju offer which may be used to set up a cross-model relation.
+* the [`storage-small` overlays](https://raw.githubusercontent.com/canonical/cos-lite-bundle/main/overlays/storage-small-overlay.yaml) provides a (small) setup of the various storages for the Mimir bundle charms.
+  Using an overlay for storage is fundamental for a production deployment, as you cannot change the amount of storage assigned to the various charms after the bundle is deployed.
 
 In order to use the overlays above, you need to:
 
