@@ -10,7 +10,7 @@ issues: https://github.com/canonical/mimir-bundle/issues
 applications:
   mimir:
     charm: mimir-coordinator-k8s
-    channel: {{ channel|default('edge', true) }}
+    channel: edge
     scale: 1
     trust: true
     constraints: arch=amd64
@@ -18,7 +18,7 @@ applications:
       data: kubernetes,1,1024M
   mimir-worker:
     charm: mimir-worker-k8s
-    channel: {{ channel|default('edge', true) }}
+    channel: edge
     scale: 3
     options:
       alertmanager: true
@@ -37,7 +37,7 @@ applications:
   s3-integrator:
     charm: s3-integrator
     scale: 1
-    channel: {{ channel|default('edge', true) }}
+    channel: edge
 
 relations:
 - - mimir:mimir-cluster
