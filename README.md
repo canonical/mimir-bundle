@@ -1,3 +1,10 @@
+> ## ⚠️ Deprecation notice
+>
+> This bundle has been deprecated in favor of the corresponding terraform module(s).
+> See https://github.com/canonical/observability-stack/tree/main/terraform/mimir
+
+---
+
 # Mimir bundle
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
